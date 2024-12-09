@@ -1,3 +1,3 @@
-import { day2 } from './2024/day2.js'
+import { day3 } from './2024/day3.js'
 
-day2()
+day3()
