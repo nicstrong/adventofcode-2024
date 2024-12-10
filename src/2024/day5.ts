@@ -7,7 +7,7 @@ type Update = {
 }
 
 export async function day5() {
-  var lines = await await readLines('data/2024/day5.sample.in')
+  var lines = await await readLines('data/2024/day5.in')
 
   const data = load(lines)
 
@@ -16,30 +16,39 @@ export async function day5() {
   console.log('Part 1:', part1)
 
   const part2 = orderUpdates(data)
-  console.log('Data:', data)
+  console.log('Part 2:', part2)
 }
 
 function orderUpdates(data: Update): number {
-  for (const update of data.updates) {
-    for (const page of update) {
-      const { before, after } = matchingRules(page, data.ordering)
-      const notBefore = before.filter(
-        (rule) => !isBeforeOrAfter(page, rule[1], update, true),
-      )
-      if (notBefore.length > 0) {
-        swapPages(notBefore[0]!, update)
-        console.log(`Invalid before: page=${page}`, notBefore)
+  let sum = 0
+  for (let i = 0; i < data.updates.length; ++i) {
+    let update = data.updates[i]!
+    if (!checkOrdering(update, data.ordering)) {
+      for (let j = 0; j < update.length; ++j) {
+        const page = update[j]!
+        const { before, after } = matchingRules(page, data.ordering)
+        const notBefore = before.filter(
+          (rule) => !isBeforeOrAfter(page, rule[1], update, true),
+        )
+        if (notBefore.length > 0) {
+          swapPages(notBefore[0]!, update)
+          j--
+          continue
+        }
+        const notAfter = after.filter(
+          (rule) => !isBeforeOrAfter(page, rule[0], update, false),
+        )
+        if (notAfter.length > 0) {
+          swapPages(notAfter[0]!, update)
+          j--
+          continue
+        }
       }
-      const notAfter = after.filter(
-        (rule) => !isBeforeOrAfter(page, rule[0], update, false),
-      )
-      if (notBefore.length > 0) {
-        swapPages(notBefore[0]!, update)
-        console.log(`Invalid after: page=${page}`, notAfter)
-      }
+      const middle = Math.trunc(update.length / 2)
+      sum += update[middle]!
     }
   }
-  return 0
+  return sum
 }
 
 function swapPages(rule: readonly [number, number], update: number[]) {
@@ -48,7 +57,6 @@ function swapPages(rule: readonly [number, number], update: number[]) {
   const afterIndex = update.indexOf(after)
   update[beforeIndex] = after
   update[afterIndex] = before
-  console.log(`Swapped ${before}<->${after}: ${update}`)
 }
 
 function validUpdates(data: Update): number {
