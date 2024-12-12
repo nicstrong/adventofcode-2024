@@ -1,0 +1,27 @@
+{
+    "AOC day": {
+    "scope": "typescript",
+    "prefix": "aoc",
+    "body": [
+        "import { readLines } from '../utils/utils.js'",
+        "",
+        "type State = {}",
+        "const DATA_FILE = 'data/2024/day6.sample.in'",
+        "",
+        "export async function day6() {",
+        "   const state = await load()",
+        "",
+        "   const part1 = 0",
+        "   console.log('Part 1:', part1)",
+        "",
+        "   const part2 = 0",
+        "   console.log('Part 2:', part2)",
+        "}",
+        "",
+        "async function load(): Promise<State> {",
+        "   const lines = await await readLines(DATA_FILE)",
+        "",
+        "   return {}",
+        "}",
+    ]},
+}
