@@ -4,27 +4,39 @@ type Equation = {
   result: number
   operands: number[]
 }
+
+type SolutionFn = (operands: number[], ops: string[], target: number) => boolean
+
 const DATA_FILE = 'data/2024/day7.in'
 
 export async function day7() {
   const equations = await load()
   //console.log('Equations:', equations)
 
-  const part1 = solvable(equations)
+  const part1 = solvable(equations, ['+', '*'], isSolutionPart1)
   console.log('Part 1:', part1)
 
-  const part2 = 0
+  const part2 = solvable(equations, ['+', '*', '||'], isSolutionPart2)
   console.log('Part 2:', part2)
 }
 
-function solvable(equations: Equation[]): number {
+function solvable(
+  equations: Equation[],
+  ops: string[],
+  solnFn: SolutionFn,
+): number {
   let sum = 0
   let idx = 0
   for (let equation of equations) {
     console.log(
       `Finding solutions for equation ${idx + 1} of ${equations.length}`,
     )
-    const solutions = findSolutionBFS(equation.operands, equation.result)
+    const solutions = findSolutionBFS(
+      equation.operands,
+      equation.result,
+      ops,
+      solnFn,
+    )
     if (solutions.length > 0) {
       sum += equation.result
     }
@@ -40,18 +52,22 @@ type SearchState = {
   result: number
 }
 
-function findSolutionBFS(operands: number[], target: number): string[][] {
+function findSolutionBFS(
+  operands: number[],
+  target: number,
+  ops: string[],
+  solnFn: SolutionFn,
+): string[][] {
   const queue: SearchState[] = [{ operators: [], result: 0 }]
   const visited = new Set<string>()
   const solutions: string[][] = []
-  const ops = ['+', '*']
 
   while (queue.length > 0) {
     const current = queue.shift()!
 
     if (current.operators.length === operands.length - 1) {
       //console.log('Trying:', current.operators)
-      if (isSolution(operands, current.operators, target)) {
+      if (solnFn(operands, current.operators, target)) {
         solutions.push([...current.operators])
       }
       continue
@@ -71,7 +87,7 @@ function findSolutionBFS(operands: number[], target: number): string[][] {
   return solutions
 }
 
-function isSolution(
+function isSolutionPart1(
   operands: number[],
   ops: string[],
   target: number,
@@ -85,6 +101,53 @@ function isSolution(
     }
   }
   return total === target
+}
+
+function isSolutionPart2(
+  operands: number[],
+  ops: string[],
+  target: number,
+): boolean {
+  // Find segments split by '||'
+  const segments: number[][] = [[operands[0]!]]
+  let currentSegment = 0
+
+  for (let i = 0; i < ops.length; i++) {
+    if (ops[i] === '||') {
+      currentSegment++
+      segments[currentSegment] = [operands[i + 1]!]
+    } else {
+      if (!segments[currentSegment]) {
+        segments[currentSegment] = []
+      }
+      segments[currentSegment]!.push(operands[i + 1]!)
+    }
+  }
+
+  // Calculate each segment
+  const segmentResults = segments.map((segOperands, segIdx) => {
+    let total = segOperands[0]!
+    let opIdx =
+      segIdx === 0
+        ? 0
+        : segments
+            .slice(0, segIdx)
+            .reduce((sum, seg) => sum + seg.length - 1, 0)
+
+    for (let i = 1; i < segOperands.length; i++) {
+      const op = ops[opIdx++]
+      if (op === '+') {
+        total += segOperands[i]!
+      } else if (op === '*') {
+        total *= segOperands[i]!
+      }
+    }
+    return total
+  })
+
+  // Join results as strings and compare
+  const result = parseInt(segmentResults.join(''))
+  return result === target
 }
 
 async function load(): Promise<Equation[]> {
