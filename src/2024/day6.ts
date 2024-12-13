@@ -1,12 +1,13 @@
-import { readLines } from '../utils/utils.js'
-import { coordEqual, Direction, type Coord } from '../utils/coords.js'
+import { Coord } from '../utils/coords.js'
+import { readLines } from '../utils/data.js'
+import { Direction } from '../utils/direction.js'
 
 type State = {
   obstructions: Coord[]
   startPos: Coord
   numRows: number
   numCols: number
-  direction: Coord
+  direction: Direction
   visited: boolean[][]
 }
 const DATA_FILE = 'data/2024/day6.sample.in'
@@ -31,11 +32,11 @@ function findLoopObstructions(state: State): number {
 
   for (let y = 0; y < state.numRows; y++) {
     for (let x = 0; x < state.numCols; x++) {
-      if (isObstruction([x, y], state) || coordEqual([x, y], state.startPos)) {
+      if (isObstruction([x, y], state) || state.startPos.equalsArray([x, y])) {
         continue
       }
 
-      state.obstructions.push([x, y])
+      state.obstructions.push(new Coord(x, y))
 
       const loop = isLoop(state)
       if (loop) {
@@ -66,7 +67,8 @@ function findUniqueVisits(state: State): number | false {
   let loopDetected = 0
 
   while (pos) {
-    const [x, y] = pos
+    const x = pos.x
+    const y = pos.y
 
     const debug = true // coordEqual(pos, [3, 6])
 
@@ -94,11 +96,9 @@ function findUniqueVisits(state: State): number | false {
 }
 
 function getNextPos(pos: Coord, state: State): Coord | undefined {
-  let [x, y] = pos
-
   while (true) {
-    const nextX = x + state.direction[0]
-    const nextY = y + state.direction[1]
+    const nextX = pos.x + state.direction.dx
+    const nextY = pos.y + state.direction.dy
 
     //console.log('Testing:', [nextX, nextY])
 
@@ -116,24 +116,19 @@ function getNextPos(pos: Coord, state: State): Coord | undefined {
     if (isObstruction([nextX, nextY], state)) {
       //console.log('Obstruction:', [nextX, nextY])
       // change direction and try again
-      if (coordEqual(state.direction, Direction.N)) {
-        state.direction = Direction.E
-      } else if (coordEqual(state.direction, Direction.E)) {
-        state.direction = Direction.S
-      } else if (coordEqual(state.direction, Direction.S)) {
-        state.direction = Direction.W
-      } else if (coordEqual(state.direction, Direction.W)) {
-        state.direction = Direction.N
-      }
+      state.direction = state.direction.rotateClockwise90()
       continue
     }
 
-    return [nextX, nextY]
+    return new Coord(nextX, nextY)
   }
 }
 
-function isObstruction(coord: Coord, state: State): boolean {
-  return state.obstructions.some(([x, y]) => x === coord[0] && y === coord[1])
+function isObstruction(
+  coord: readonly [number, number],
+  state: State,
+): boolean {
+  return state.obstructions.some((c) => c.x === coord[0] && c.y === coord[1])
 }
 
 async function load(): Promise<State> {
@@ -146,10 +141,10 @@ async function load(): Promise<State> {
     let x = 0
     for (const token of line.split('')) {
       if (token === '#') {
-        obstructions.push([x, y])
+        obstructions.push(new Coord(x, y))
       }
       if (token === '^') {
-        startPos = [x, y]
+        startPos = new Coord(x, y)
       }
       x++
     }

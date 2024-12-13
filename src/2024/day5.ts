@@ -1,4 +1,4 @@
-import { readLines } from '../utils/utils.js'
+import { readLines } from '../utils/data.js'
 
 type OrderingType = (readonly [number, number])[]
 type Update = {

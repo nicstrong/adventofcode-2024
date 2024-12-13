@@ -1,4 +1,4 @@
-import { readAocData, readLines } from '../utils/utils.js'
+import { readAocData, readLines } from '../utils/data.js'
 
 export async function day1() {
   var data = await (await readAocData('data/2024/day1.in')).getTokens()

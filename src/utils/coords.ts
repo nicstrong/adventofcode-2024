@@ -1,17 +1,39 @@
-export type Coord = readonly [number, number]
+export class Coord {
+  constructor(readonly x: number, readonly y: number) {}
 
-export const Direction = {
-  N: [0, -1] as Coord,
-  S: [0, 1] as Coord,
-  W: [-1, 0] as Coord,
-  E: [1, 0] as Coord,
+  static from([x, y]: readonly [number, number]): Coord {
+    return new Coord(x, y)
+  }
 
-  NE: [1, -1] as Coord,
-  NW: [-1, -1] as Coord,
-  SE: [1, 1] as Coord,
-  SW: [-1, 1] as Coord,
+  equals(other: Coord): boolean {
+    return this.x === other.x && this.y === other.y
+  }
+
+  equalsArray([x, y]: readonly [number, number]): boolean {
+    return this.x === x && this.y === y
+  }
+
+  add(other: Coord): Coord {
+    return new Coord(this.x + other.x, this.y + other.y)
+  }
+
+  multiply(scalar: number): Coord {
+    return new Coord(this.x * scalar, this.y * scalar)
+  }
+
+  toString(): string {
+    return `(${this.x},${this.y})`
+  }
+
+  toArray(): readonly [number, number] {
+    return [this.x, this.y] as const
+  }
+
+  manhattan(other: Coord): number {
+    return Math.abs(this.x - other.x) + Math.abs(this.y - other.y)
+  }
+
+  euclidean(other: Coord): number {
+    return Math.sqrt((this.x - other.x) ** 2 + (this.y - other.y) ** 2)
+  }
 }
-
-export const Directions = Object.values(Direction)
-
-export const coordEqual = (a: Coord, b: Coord) => a[0] === b[0] && a[1] === b[1]
