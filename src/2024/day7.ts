@@ -108,46 +108,17 @@ function isSolutionPart2(
   ops: string[],
   target: number,
 ): boolean {
-  // Find segments split by '||'
-  const segments: number[][] = [[operands[0]!]]
-  let currentSegment = 0
-
-  for (let i = 0; i < ops.length; i++) {
-    if (ops[i] === '||') {
-      currentSegment++
-      segments[currentSegment] = [operands[i + 1]!]
+  let total = operands[0]!
+  for (let i = 1; i < operands.length; i++) {
+    if (ops[i - 1] === '+') {
+      total += operands[i]!
+    } else if (ops[i - 1] === '*') {
+      total *= operands[i]!
     } else {
-      if (!segments[currentSegment]) {
-        segments[currentSegment] = []
-      }
-      segments[currentSegment]!.push(operands[i + 1]!)
+      total = parseInt(`${total}${operands[i]}`)
     }
   }
-
-  // Calculate each segment
-  const segmentResults = segments.map((segOperands, segIdx) => {
-    let total = segOperands[0]!
-    let opIdx =
-      segIdx === 0
-        ? 0
-        : segments
-            .slice(0, segIdx)
-            .reduce((sum, seg) => sum + seg.length - 1, 0)
-
-    for (let i = 1; i < segOperands.length; i++) {
-      const op = ops[opIdx++]
-      if (op === '+') {
-        total += segOperands[i]!
-      } else if (op === '*') {
-        total *= segOperands[i]!
-      }
-    }
-    return total
-  })
-
-  // Join results as strings and compare
-  const result = parseInt(segmentResults.join(''))
-  return result === target
+  return total === target
 }
 
 async function load(): Promise<Equation[]> {
