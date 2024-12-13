@@ -1,6 +1,5 @@
-import { read } from 'fs'
 import { readLines } from '../utils/utils.js'
-import { coordEqual, Direction, type Coord } from '../utils/types.js'
+import { coordEqual, Direction, type Coord } from '../utils/coords.js'
 
 type State = {
   obstructions: Coord[]
@@ -10,7 +9,7 @@ type State = {
   direction: Coord
   visited: boolean[][]
 }
-const DATA_FILE = 'data/2024/day6.in'
+const DATA_FILE = 'data/2024/day6.sample.in'
 
 export async function day6() {
   const state = await load()
@@ -45,7 +44,7 @@ function findLoopObstructions(state: State): number {
 
       state.obstructions.pop()
       state.visited = newVisited(state.numRows, state.numCols)
-      state.direction = Direction.UP
+      state.direction = Direction.N
     }
     console.log(`Obstruction: row: ${y} done. count=${loopCount}`)
   }
@@ -117,14 +116,14 @@ function getNextPos(pos: Coord, state: State): Coord | undefined {
     if (isObstruction([nextX, nextY], state)) {
       //console.log('Obstruction:', [nextX, nextY])
       // change direction and try again
-      if (coordEqual(state.direction, Direction.UP)) {
-        state.direction = Direction.RIGHT
-      } else if (coordEqual(state.direction, Direction.RIGHT)) {
-        state.direction = Direction.DOWN
-      } else if (coordEqual(state.direction, Direction.DOWN)) {
-        state.direction = Direction.LEFT
-      } else if (coordEqual(state.direction, Direction.LEFT)) {
-        state.direction = Direction.UP
+      if (coordEqual(state.direction, Direction.N)) {
+        state.direction = Direction.E
+      } else if (coordEqual(state.direction, Direction.E)) {
+        state.direction = Direction.S
+      } else if (coordEqual(state.direction, Direction.S)) {
+        state.direction = Direction.W
+      } else if (coordEqual(state.direction, Direction.W)) {
+        state.direction = Direction.N
       }
       continue
     }
@@ -169,7 +168,7 @@ async function load(): Promise<State> {
   return {
     obstructions,
     startPos,
-    direction: Direction.UP,
+    direction: Direction.N,
     visited,
     numRows,
     numCols,
