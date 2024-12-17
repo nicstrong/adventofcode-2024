@@ -1,12 +1,12 @@
 import { Coord } from './coords.js'
 import { Direction } from './direction.js'
 
-type CellData<T> = {
+export type CellData<T> = {
   data: T
   coord: Coord
 }
 
-type CellPred<T> = (cell: T, x: number, y: number) => boolean
+export type CellPred<T> = (cell: T, x: number, y: number) => boolean
 
 export class Matrix<T> {
   private data: T[][]
@@ -42,7 +42,9 @@ export class Matrix<T> {
     let idx = 0
     for (let row of this.data) {
       console.log(
-        `${idx.toString(16).toUpperCase()}${row.map(renderCell).join('')}`,
+        `${axisLabel ? idx.toString(16).toUpperCase() : ''}${row
+          .map(renderCell)
+          .join('')}`,
       )
       idx++
     }
