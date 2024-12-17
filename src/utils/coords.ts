@@ -25,6 +25,10 @@ export class Coord {
     return `(${this.x},${this.y})`
   }
 
+  hash(): string {
+    return `${this.x}_${this.y}`
+  }
+
   toArray(): readonly [number, number] {
     return [this.x, this.y] as const
   }
@@ -35,5 +39,9 @@ export class Coord {
 
   euclidean(other: Coord): number {
     return Math.sqrt((this.x - other.x) ** 2 + (this.y - other.y) ** 2)
+  }
+
+  direction(other: Coord): Coord {
+    return new Coord(Math.sign(other.x - this.x), Math.sign(other.y - this.y))
   }
 }

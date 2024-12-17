@@ -39,6 +39,12 @@ export class Direction {
   get coord(): Coord {
     return new Coord(this.dx, this.dy)
   }
+
+  toString(): string {
+    return `(${this.dx > 0 ? '+' : ''}${this.dx},${this.dy > 0 ? '+' : ''}${
+      this.dy
+    })`
+  }
 }
 
 export const Directions = [

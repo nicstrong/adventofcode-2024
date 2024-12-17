@@ -1,12 +1,12 @@
+import { Coord } from './coords.js'
 import { Direction } from './direction.js'
 
-type CellAndCoords<T> = {
-  cell: T
-  row: number
-  col: number
+type CellData<T> = {
+  data: T
+  coord: Coord
 }
 
-type CellPred<T> = (cell: T, row: number, col: number) => boolean
+type CellPred<T> = (cell: T, x: number, y: number) => boolean
 
 export class Matrix<T> {
   private data: T[][]
@@ -30,9 +30,21 @@ export class Matrix<T> {
     return new Matrix(data)
   }
 
-  console(renderCell: (cell: T) => string): void {
+  console(renderCell: (cell: T) => string, axisLabel: boolean): void {
+    if (axisLabel) {
+      console.log(
+        ' ' +
+          Array.from({ length: this.data[0]!.length }, (_, i) =>
+            i.toString(16).toUpperCase(),
+          ).join(''),
+      )
+    }
+    let idx = 0
     for (let row of this.data) {
-      console.log(row.map(renderCell).join(''))
+      console.log(
+        `${idx.toString(16).toUpperCase()}${row.map(renderCell).join('')}`,
+      )
+      idx++
     }
   }
 
@@ -40,24 +52,16 @@ export class Matrix<T> {
     return new Matrix(this.data.map((row) => row.slice()))
   }
 
-  inBounds(row: number, col: number): boolean {
-    return (
-      row >= 0 &&
-      row < this.data.length &&
-      col >= 0 &&
-      col < this.data[row]!.length
-    )
+  inBounds(x: number, y: number): boolean {
+    return y >= 0 && y < this.data.length && x >= 0 && x < this.data[y]!.length
   }
 
-  foreach(
-    pred: CellPred<T>,
-    fn: (cell: T, row: number, col: number) => void,
-  ): void {
+  foreach(pred: CellPred<T>, fn: (cell: T, coord: Coord) => void): void {
     for (let row = 0; row < this.data.length; row++) {
       for (let col = 0; col < this.data[row]!.length; col++) {
         const cell = this.data[row]![col]!
-        if (pred(cell, row, col)) {
-          fn(cell, row, col)
+        if (pred(cell, col, row)) {
+          fn(cell, new Coord(col, row))
         }
       }
     }
@@ -69,35 +73,51 @@ export class Matrix<T> {
     return count
   }
 
+  filter(pred: CellPred<T>): CellData<T>[] {
+    const results: CellData<T>[] = []
+    this.foreach(pred, (cell, coord) => {
+      results.push({ data: cell, coord })
+    })
+    return results
+  }
+
   findCellsOnCardinal(
     startX: number,
     startY: number,
     direction: Direction,
     pred: CellPred<T>,
-  ): CellAndCoords<T>[] {
-    const results: CellAndCoords<T>[] = []
-    let row = startY
-    let col = startX
+  ): CellData<T>[] {
+    const results: CellData<T>[] = []
+    let x = startX + direction.dx
+    let y = startY + direction.dy
 
-    while (this.inBounds(row, col)) {
-      const cell = this.data[row]![col]!
-      if (pred(cell, row, col)) {
-        results.push({ cell, row, col })
+    const start = new Coord(startX, startY)
+
+    while (this.inBounds(x, y)) {
+      console.log(`Checking: (${x}, ${y}) on dir: (${direction}) from ${start}`)
+      const cell = this.data[y]![x]!
+      if (pred(cell, x, y)) {
+        results.push({ data: cell, coord: new Coord(x, y) })
       }
-      row += direction.dx
-      col += direction.dy
+      y += direction.dy
+      x += direction.dx
     }
 
     return results
   }
 
-  get(row: number, col: number): T | undefined {
-    return this.inBounds(row, col) ? this.data[row]![col] : undefined
+  get(x: number, y: number): T | undefined {
+    return this.inBounds(x, y) ? this.data[y]![x] : undefined
   }
 
-  set(row: number, col: number, value: T): void {
-    if (this.inBounds(row, col)) {
-      this.data[row]![col] = value
+  set(x: number, y: number, valueOrSetter: T | ((prev: T) => T)): void {
+    if (this.inBounds(x, y)) {
+      if (typeof valueOrSetter === 'function') {
+        const fn = valueOrSetter as (prev: T) => T
+        this.data[y]![x] = fn(this.data[y]![x]!)
+      } else {
+        this.data[y]![x] = valueOrSetter
+      }
     }
   }
 }
