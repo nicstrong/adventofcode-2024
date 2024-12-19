@@ -50,6 +50,13 @@ export class Matrix<T> {
     }
   }
 
+  get numRows(): number {
+    return this.data.length
+  }
+  get numCols(): number {
+    return this.data[0]!.length
+  }
+
   clone(): Matrix<T> {
     return new Matrix(this.data.map((row) => row.slice()))
   }
