@@ -6,29 +6,24 @@ import { CellData, CellPred, Matrix } from '../utils/matrix.js'
 type Cell = number
 
 type State = Matrix<Cell>
-const DATA_FILE = 'data/2024/day10.sample.in'
+const DATA_FILE = 'data/2024/day10.in'
 
 export async function day10() {
   const state = await load()
 
-  const part1 = trailheadSum(state)
+  const part1 = trailheadSum(state, false)
   console.log('Part 1:', part1)
 
-  const part2 = 0
+  const part2 = trailheadSum(state, true)
   console.log('Part 2:', part2)
 }
 
-function trailheadSum(state: State): number {
+function trailheadSum(state: State, allPaths: boolean): number {
   const trailheads = state.filter((cell) => cell === 0)
 
   let sum = 0
   for (let trailhead of trailheads) {
-    const trails = findTrailBFS(state, trailhead.coord)
-    console.log(`Trailhead ${trailhead.coord}: ${trails.length} valid`)
-    for (let trail of trails) {
-      drawTrail(state.numRows, state.numCols, trail)
-      console.log()
-    }
+    const trails = findTrailBFS(state, trailhead.coord, allPaths)
     sum += trails.length
   }
   return sum
@@ -40,7 +35,11 @@ type Path = {
   sequence: number[]
 }
 
-function findTrailBFS(grid: State, trailhead: Coord): Coord[][] {
+function findTrailBFS(
+  grid: State,
+  trailhead: Coord,
+  allPaths: boolean,
+): Coord[][] {
   const validPaths: Coord[][] = []
   const queue: Path[] = [
     {
@@ -62,13 +61,25 @@ function findTrailBFS(grid: State, trailhead: Coord): Coord[][] {
 
     // Found complete path 0-9
     if (path.sequence.length === 10) {
-      validPaths.push(
-        [...path.visited].map((coord) => {
-          const cleaned = coord.replace(/[\(\)]/g, '') // Remove brackets
-          const [x, y] = cleaned.split(',').map((val) => parseInt(val))
-          return new Coord(x!, y!)
-        }),
-      )
+      const last = Array.from(path.visited)[9]!
+        .split(',')
+        .map((val) => parseInt(val))
+
+      // only add if level 9 has never been completed
+      if (
+        allPaths ||
+        !validPaths.some(
+          (trail) => trail[9]!.x === last[0] && trail[9]!.y === last[1],
+        )
+      ) {
+        validPaths.push(
+          [...path.visited].map((coord) => {
+            const [x, y] = coord.split(',').map((val) => parseInt(val))
+            return new Coord(x!, y!)
+          }),
+        )
+      }
+
       continue
     }
 
