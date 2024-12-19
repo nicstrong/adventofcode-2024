@@ -1,6 +1,5 @@
 import { Coord } from '../utils/coords.js'
 import { readLines } from '../utils/data.js'
-import { Direction } from '../utils/direction.js'
 import { CellData, CellPred, Matrix } from '../utils/matrix.js'
 
 type Cell = {

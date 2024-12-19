@@ -15,6 +15,6 @@
     "sourceMap": true,
     "target": "ES2022",
     "module": "NodeNext",
-    "lib": ["es2022"]
+    "lib": ["es2023"]
   }
 }
